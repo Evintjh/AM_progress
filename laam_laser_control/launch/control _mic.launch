@@ -1,0 +1,32 @@
+<launch>
+  <arg name="gui" default="true" />
+  <arg name="sim" default="false" />
+
+  <!-- define the powder, process, material parameters -->
+  <!-- <rosparam command="load" file="$(find laam_laser_control)/config/params.yaml" /> -->
+
+  <param name="/use_sim_time" value="$(arg sim)" />
+  
+  <!-- launch the CCD camera melt pool monitoring node -->
+  <!-- contains nd_supervisor(MsgStatus), nd_velocity, nd_geometry.py(image processing), nd_moments.py, usb_cam_node,image_view -->
+  <include file="$(find camera_monitoring)/launch/camera_monitoring.launch">
+    <arg name="gui" value="$(arg gui)" />
+  </include>
+
+  <!-- laser control -->
+  <rosparam command="load" file="$(find laam_laser_control)/config/control_parameters.yaml" />
+
+  <!-- received processed image and published controlled power value-->
+  <node name="control" pkg="laam_laser_control" type="nd_control.py">
+    <param name="power_min" type="double" value="0" />
+    <param name="power_max" type="double" value="1500" />
+  </node>
+  
+  <!-- launch the GUI -->
+  <node name="control_panel" pkg="laam_laser_control" type="qt_control.py" if="$(arg gui)" />
+
+  <!-- laser socket will subscribe controlled power value and send to robot(laser socket server) via tcp/ip -->
+  <!-- <node name="laser_socket" pkg="laam_laser_control" type="nd_laser_socket.py" /> -->
+  <node name="labjack_power_output" pkg="labjack_ros" type="nd_labjack.py" respawn="true"/>
+
+</launch>

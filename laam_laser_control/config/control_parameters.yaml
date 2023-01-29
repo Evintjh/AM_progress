@@ -1,0 +1,7 @@
+control_parameters: {
+  pid_parameters: {Kd: 0.0, Ki: 0.02, Kp: 9},
+  power: {max: 1500.0, min: 0},
+  step: {power: 500, trigger: 2},
+  manual: {power: 500.0},
+  automatic: {width: 140, time: 10, mode: 0}
+}
