@@ -1,0 +1,69 @@
+<launch>
+  <arg name="gui" default="true" />
+  <arg name="sim" default="false" />
+  
+  
+  <!-- arecord -l will show available input devices, use the car number as
+  the first number and the subdevice number as the second in a string
+  like hw:1,0 -->
+  <arg name="device" default="hw:0,0" />
+  <arg name="output"      default="screen"/>
+  <arg name="bitrate" default="128"/>
+  <arg name="channels" default="1"/>
+  <arg name="sample_rate" default="44100"/>
+  <arg name="format" default="wave"/>
+  <arg name="sample_format" default="S16LE"/>
+  <arg name="ns" default=""/>
+  <arg name="audio_topic" default="/audio"/>
+ 
+
+  <!-- publish audio data as wav format (raw signal) to a topic -->
+  <!-- <group ns="$(arg ns)"> -->
+  <node name="audio_capture" pkg="audio_capture" type="audio_capture" output="screen">
+    <param name="depth" value="16" />
+    <param name="device" value="$(arg device)" />
+    <!-- <param name="bitrate" value="$(arg bitrate)"/> -->
+    <param name="channels" value="$(arg channels)"/>
+    <param name="sample_rate" value="$(arg sample_rate)"/>
+    <param name="sample_format" value="$(arg sample_format)"/>
+    <param name="format" value="$(arg format)"/>
+  </node>
+  <!-- </group> -->
+
+  <!-- convert the raw signal to msg with header stamps -->
+  <node name="audio_converter" pkg="audio_capture_convert" type="converter_node.py" output="$(arg output)">
+    <remap from="audio" to="$(arg audio_topic)" />
+  </node>
+
+
+
+
+
+
+  <!-- define the powder, process, material parameters -->
+  <!-- <rosparam command="load" file="$(find laam_laser_control)/config/params.yaml" /> -->
+
+  <param name="/use_sim_time" value="$(arg sim)" />
+  
+
+  <!-- laser control -->
+  <rosparam command="load" file="$(find laam_laser_control)/config/control_parameters.yaml" />
+
+  <!-- received rms_energy and published controlled power value-->
+  <node name="control" pkg="laam_laser_control" type="nd_control.py">
+    <param name="power_min" type="double" value="0" />
+    <param name="power_max" type="double" value="1500" />
+  </node>
+  
+  <!-- launch the GUI -->
+  <node name="control_panel" pkg="laam_laser_control" type="qt_control.py" if="$(arg gui)" />
+
+  <!-- laser socket will subscribe controlled power value and send to robot(laser socket server) via tcp/ip -->
+  <!-- <node name="laser_socket" pkg="laam_laser_control" type="nd_laser_socket.py" /> -->
+  <!-- <node name="labjack_power_output" pkg="labjack_ros" type="nd_labjack.py" respawn="true" /> -->
+  
+  <node name="acoustic_signatures" pkg="acoustic_feature_extraction" type="acoustic_feature_extraction.py"/>
+
+  <node name="supervisor" pkg="laam_laser_control" type="nd_supervisor.py"/>
+
+</launch>
