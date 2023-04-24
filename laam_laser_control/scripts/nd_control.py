@@ -71,10 +71,16 @@ class NdControl():
         '''
         rospy.Subscriber(
             '/usb_cam/geometry', MsgGeometry, self.cb_geometry, queue_size=1)       
+<<<<<<< HEAD
         '''
         rospy.Subscriber(
             '/supervisor/status', MsgStatus, self.cb_status, queue_size=1)
                                 
+=======
+        rospy.Subscriber(
+            '/supervisor/status', MsgStatus, self.cb_status, queue_size=1)
+        '''                        
+>>>>>>> bdf3b23afbe59398e3f6b23eb0b42294e06cff2d
         rospy.Subscriber(
             '/control/parameters', MsgControl, self.cb_control, queue_size=1)
         rospy.Subscriber(
@@ -98,8 +104,11 @@ class NdControl():
         self.msg_start = MsgStart()
         self.msg_setpoint = MsgSetpoint()
         self.msg_acoustic_feature = MsgAcousticFeature()
+<<<<<<< HEAD
         self.msg_control = MsgControl()
         self.msg_status = MsgStatus()
+=======
+>>>>>>> bdf3b23afbe59398e3f6b23eb0b42294e06cff2d
         self.mode = MANUAL
 
         self.status = False
@@ -158,7 +167,11 @@ class NdControl():
         self.power = params['power']
 
     def setAutoParameters(self, params):
+<<<<<<< HEAD
         self.setpoint = params['width']             #width???
+=======
+        self.setpoint = params['width']
+>>>>>>> bdf3b23afbe59398e3f6b23eb0b42294e06cff2d
         self.control_time_interval = params['time']
         self.auto_mode = params['mode']
 
@@ -188,14 +201,21 @@ class NdControl():
         self.adaptive_time = rospy.get_time() # get current ros time in sec
         #-----------------------------------------
         self.control_change = msg_control.change
+<<<<<<< HEAD
     
+=======
+
+>>>>>>> bdf3b23afbe59398e3f6b23eb0b42294e06cff2d
     def cb_status(self, msg_status):
         self.power_ant = msg_status.power
         if msg_status.laser_on and not self.status:
             self.time_step = 0
             self.track_number += 1
         self.status = msg_status.laser_on
+<<<<<<< HEAD
     
+=======
+>>>>>>> bdf3b23afbe59398e3f6b23eb0b42294e06cff2d
 
     def cb_rms(self, msg_acoustic_feature):
         stamp = msg_acoustic_feature.header.stamp
@@ -294,7 +314,11 @@ class NdControl():
         # value = self.power
         self.msg_start.control = False
         if self.status and self.time_step > 0:
+<<<<<<< HEAD
             if self.auto_mode is 0 and rms_energy > 1000:    # continous mode, use time
+=======
+            if self.auto_mode is 0 and rms_energy > 0.0001:    # continous mode, use time
+>>>>>>> bdf3b23afbe59398e3f6b23eb0b42294e06cff2d
                 # if self.time_control < self.control_time_interval:
                 #     self.auto_setpoint(minor_axis)
                 # if self.time_control > self.control_time_interval:

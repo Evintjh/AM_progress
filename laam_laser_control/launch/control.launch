@@ -66,4 +66,5 @@
 
   <node name="supervisor" pkg="laam_laser_control" type="nd_supervisor.py"/>
 
+
 </launch>

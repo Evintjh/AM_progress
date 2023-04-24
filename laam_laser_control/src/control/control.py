@@ -63,12 +63,16 @@ class PID():
         return self.output
 
     def update(self, value, time):
+
         if self.time is None:                       #how come it's not this case?
+
             output = self.output
         else:
             error = self.setpoint - value
             delta = time - self.time
+
             output = self.Kp * (error - self.error) + self.Ki * error * delta +  self.Kd*error*(value/time)
+
             if output > 50:
                 output = 50
             if output < -50:

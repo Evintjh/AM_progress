@@ -21,6 +21,7 @@ add_message_files(
   MsgEmission.msg
   MsgSetpoint.msg
   MsgStatus.msg
+
 )
 
 generate_messages(
