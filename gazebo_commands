@@ -1,6 +1,0 @@
-export TURTLEBOT3_MODEL=waffle
-roslaunch turtlebot3_gazebo turtlebot3_house.launch
-
-
-export TURTLEBOT3_MODEL=waffle
-roslaunch turtlebot3_navigation turtlebot3_navigation.launch map_file:=/home/evintoh/catkin_ws/src/tb3_house_map.yaml
