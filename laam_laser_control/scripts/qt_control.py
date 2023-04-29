@@ -59,11 +59,9 @@ class QtControl(QtWidgets.QWidget):
 
         #self.minor_axis = 0
         #self.major_axis = 0
-<<<<<<< HEAD
+
         self.rms_energy = 0
-=======
-        #self.rms_energy = 0
->>>>>>> bdf3b23afbe59398e3f6b23eb0b42294e06cff2d
+
         self.power = 0
         self.control = False
 
@@ -72,11 +70,6 @@ class QtControl(QtWidgets.QWidget):
 
         self.auto_mode = 0
 
-<<<<<<< HEAD
-      
-
-=======
->>>>>>> bdf3b23afbe59398e3f6b23eb0b42294e06cff2d
 
         rospy.Subscriber(
             '/acoustic_feature', MsgAcousticFeature, self.cb_rms, queue_size=1)
@@ -211,10 +204,9 @@ class QtControl(QtWidgets.QWidget):
             rospy.set_param('/control_parameters/automatic', auto)
 
     def tmrInfoEvent(self):
-<<<<<<< HEAD
+
         #self.rms_energy = msg_acoustic_feature.spectral_centroids[0]
-=======
->>>>>>> bdf3b23afbe59398e3f6b23eb0b42294e06cff2d
+=
         self.lblInfo.setText(
             "Rms energy: %.2f<br> <b>Power: %.4f</b>" % (
                 self.rms_energy, self.power))
