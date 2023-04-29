@@ -68,7 +68,7 @@ class PID():
         else:
             error = self.setpoint - value
             delta = time - self.time
-            output = self.Kp * (error - self.error) + self.Ki * error * delta
+            output = self.Kp * (error - self.error) + self.Ki * error * delta + self.Kd * error * (value/time)
             if output > 50:
                 output = 50
             if output < -50:
