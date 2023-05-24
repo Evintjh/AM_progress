@@ -59,9 +59,7 @@ class QtControl(QtWidgets.QWidget):
 
         #self.minor_axis = 0
         #self.major_axis = 0
-
-        self.rms_energy = 0
-
+        #self.rms_energy = 0
         self.power = 0
         self.control = False
 
@@ -183,7 +181,7 @@ class QtControl(QtWidgets.QWidget):
 
 
     def cb_rms(self, msg_acoustic_feature):
-        self.rms_energy = msg_acoustic_feature.spectral_centroids[0]
+        self.rms_energy = msg_acoustic_feature.rms_energy
         
 
         #self.minor_axis = msg_geometry.minor_axis
@@ -204,9 +202,6 @@ class QtControl(QtWidgets.QWidget):
             rospy.set_param('/control_parameters/automatic', auto)
 
     def tmrInfoEvent(self):
-
-        #self.rms_energy = msg_acoustic_feature.spectral_centroids[0]
-=
         self.lblInfo.setText(
             "Rms energy: %.2f<br> <b>Power: %.4f</b>" % (
                 self.rms_energy, self.power))

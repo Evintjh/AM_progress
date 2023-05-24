@@ -1,3 +1,4 @@
+
 #!/usr/bin/env python
 import os
 import rospy
@@ -12,7 +13,7 @@ from laam_laser_control.msg import MsgStatus
 
 #from audio_common_msgs.msg import AudioData
 #from audio_common_msgs.msg import AudioInfo
-from acoustic_monitoring_msgs.msg import (                                  #from acoustic_monitoring_msgs package import those msg files
+from acoustic_monitoring_msgs.msg import (
     AudioDataStamped,
     MsgAcousticFeature)
 #from camera_monitoring.msg import MsgGeometry                           
@@ -71,18 +72,10 @@ class NdControl():
         '''
         rospy.Subscriber(
             '/usb_cam/geometry', MsgGeometry, self.cb_geometry, queue_size=1)       
-
         '''
         rospy.Subscriber(
             '/supervisor/status', MsgStatus, self.cb_status, queue_size=1)
                                 
-        rospy.Subscriber(
-            '/supervisor/status', MsgStatus, self.cb_status, queue_size=1)
-        '''                        
-
-        rospy.Subscriber(
-            '/supervisor/status', MsgStatus, self.cb_status, queue_size=1)
-        '''                        
         rospy.Subscriber(
             '/control/parameters', MsgControl, self.cb_control, queue_size=1)
         rospy.Subscriber(
@@ -166,12 +159,7 @@ class NdControl():
         self.power = params['power']
 
     def setAutoParameters(self, params):
-
         self.setpoint = params['width']             #width???
-
-        self.setpoint = params['width']
-        self.setpoint = params['width']
-
         self.control_time_interval = params['time']
         self.auto_mode = params['mode']
 
@@ -201,14 +189,14 @@ class NdControl():
         self.adaptive_time = rospy.get_time() # get current ros time in sec
         #-----------------------------------------
         self.control_change = msg_control.change
-
+    
     def cb_status(self, msg_status):
         self.power_ant = msg_status.power
         if msg_status.laser_on and not self.status:
             self.time_step = 0
             self.track_number += 1
         self.status = msg_status.laser_on
-
+    
 
     def cb_rms(self, msg_acoustic_feature):
         stamp = msg_acoustic_feature.header.stamp
@@ -225,7 +213,7 @@ class NdControl():
         value = self.range(value)
         # value = self.cooling(msg_geo.minor_axis, value) 
         self.msg_power.header.stamp = stamp
-        self.msg_power.value = value
+        self.msg_power.value = value                                                                #this is the line that causes the change in power based off rms
         self.msg_info.time = str(self.time_control)
         self.msg_info.track_number = self.track_number
         rospy.set_param('/control/power', value)
@@ -307,13 +295,7 @@ class NdControl():
         # value = self.power
         self.msg_start.control = False
         if self.status and self.time_step > 0:
-
             if self.auto_mode is 0 and rms_energy > 1000:    # continous mode, use time
-
-            if self.auto_mode is 0 and rms_energy > 0.0001:    # continous mode, use time
-
-            if self.auto_mode is 0 and rms_energy > 0.0001:    # continous mode, use time
-
                 # if self.time_control < self.control_time_interval:
                 #     self.auto_setpoint(minor_axis)
                 # if self.time_control > self.control_time_interval:

@@ -20,8 +20,6 @@ add_message_files(
   MsgInfo.msg
   MsgEmission.msg
   MsgSetpoint.msg
-  MsgStatus.msg
-
 )
 
 generate_messages(
