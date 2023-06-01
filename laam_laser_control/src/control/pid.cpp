@@ -38,7 +38,7 @@ PidObject::PidObject() : error_(3, 0), filtered_error_(3, 0)
   // Two parameters to allow for error calculation with discontinous value
   //node_priv.param<bool>("angle_error", angle_error_, false);
   //node_priv.param<double>("angle_wrap", angle_wrap_, 2.0 * 3.14159);                                //subscribe to AcousticFeatureExtraction
-  node_priv.param<double>("rms_energy", rms_energy, "/acoustic_feature");                                              //what value to put for last section?
+  node_priv.param<double>("rms_energy", rms_energy_topic, "/acoustic_feature");                                              //what value to put for last section?
 
 
   // Update params if specified as command-line options, & print settings
@@ -49,13 +49,14 @@ PidObject::PidObject() : error_(3, 0), filtered_error_(3, 0)
   // instantiate publishers & subscribers                                                                           
   control_effort_pub_ = node.advertise<std_msgs::Float64>(topic_from_controller_, 1);                             //published ->refer to plant_sim to see how it is used
   pid_debug_pub_ = node.advertise<std_msgs::Float64MultiArray>(pid_debug_pub_name_, 1);
-  setpoint_pub_ = node.advertise<std_msgs::Float64>(setpoint_topic_, 1);
+  //setpoint_pub_ = node.advertise<std_msgs::Float64>(setpoint_topic_, 1);
+  setpoint_pub_ = node.advertise<laam_laser_control::MsgSetPoint>(setpoint_topic_, 1);
   plant_pub_ = node.advertise<std_msgs::Float64>(topic_from_plant_, 1);
 
   //ros::Subscriber plant_sub_ = node.subscribe(topic_from_plant_, 1, &PidObject::plantStateCallback, this);        //sub to MsgPower
   //ros::Subscriber setpoint_sub_ = node.subscribe(setpoint_topic_, 1, &PidObject::setpointCallback, this);         //sub to MsgState
-  ros::Subscriber pid_enabled_sub_ = node.subscribe(pid_enable_topic_, 1, &PidObject::pidEnableCallback, this);
-  ros::Subscriber rms_sub_ = node.subscribe(rms_energy_topic, 1, &PidObject::pidRmsCallback, this);               //sub to AcousticFeatureExtraction::rms energy + must create new func!!
+  ros::Subscriber pid_enabled_sub_ = node.subscribe(pid_enable_topic_, 1, &PidObject::pidEnableCallback, this);                                                                     //fn
+  ros::Subscriber rms_sub_ = node.subscribe(rms_energy_topic, 1, &PidObject::plantStateCallback, this);               //sub to AcousticFeatureExtraction::rms energy for state      //fn
 
   //if (!plant_sub_ || !setpoint_sub_ || !pid_enabled_sub_)
   if (!pid_enabled_sub_)
@@ -81,7 +82,7 @@ PidObject::PidObject() : error_(3, 0), filtered_error_(3, 0)
   // Respond to inputs until shut down
   while (ros::ok())
   {
-    doCalcs();
+    doCalcs();                                                                                //impt fn
     ros::spinOnce();
 
     // Add a small sleep to avoid 100% CPU usage
@@ -89,12 +90,19 @@ PidObject::PidObject() : error_(3, 0), filtered_error_(3, 0)
   }
 };
 
-void PidObject::setpointCallback(const std_msgs::Float64& MsgSetPoint)
+void PidObject::setpointRelease()          //does python implementation have this? 
 {
-  setpoint_ = MsgSetPoint.setpoint;                                              //error derivation
-  last_setpoint_msg_time_ = ros::Time::now();
-  new_state_or_setpt_ = true;
+  //setpoint_ = MsgSetPoint.setpoint;                                              //error derivation
+    setpoint_ = accumulate(rms_energy_list.begin(), rms_energy_list.end(), 0.0) / rms_energy_list.size();
+    //control.pid.set_setpoint(setpoint);
+    MsgSetPoint.setpoint = setpoint_  ;
+    //pub_setpoint.publish(msg_setpoint);
+    setpoint_pub_.publish(MsgSetPoint);
+ 
+  
+    new_state_or_setpt_ = true;
 }
+
 /*
 void PidObject::pidRmsCallback(const std_msg::Float64& MsgAcousticFeature)
 {
@@ -104,7 +112,7 @@ void PidObject::pidRmsCallback(const std_msg::Float64& MsgAcousticFeature)
 }
 */
 
-void PidObject::plantStateCallback(const std_msgs::Float64& MsgAcousticFeature)
+void PidObject::plantStateCallback(const acoustic_monitoring_msgs::MsgAcousticFeature::ConstPtr& MsgAcousticFeature)
 {
   plant_state_ = MsgAcousticFeature.rms_energy;                                              //error derivation
   rms_energy_error = false;
@@ -191,6 +199,45 @@ void PidObject::reconfigureCallback(pid::PidConfig& config, uint32_t level)
   ROS_INFO("Pid reconfigure request: Kp: %f, Ki: %f, Kd: %f", Kp_, Ki_, Kd_);
 }
 
+/*
+    def adaptive_setpoint(self, current_time, rms_energy):
+        countLock = Lock() # use Lock() to avoid conflict when multiple thread accessing the same vriable
+        countLock.acquire()
+        
+        if current_time - self.adaptive_time < ADAPTIVE_SETPOINT_INTERVAL: 
+            self.rms_energy_list.append(rms_energy)
+        else:
+            self.setpoint = sum(self.rms_energy_list)/len(self.rms_energy_list)
+            self.control.pid.set_setpoint(self.setpoint)
+            self.msg_setpoint.setpoint = self.setpoint
+            self.pub_setpoint.publish (self.msg_setpoint)
+            self.rms_energy_list = []
+            self.adaptive_time = current_time
+            
+        countLock.release()
+    
+    
+
+
+    def auto_setpoint(self, rms_energy):
+        self.track.append(rms_energy)
+        self.setpoint = sum(self.track)/len(self.track)
+
+*/
+
+
+
+
+
+/*
+void adaptive_setpt(const std_msgs::Float64& MsgAcousticFeature){
+
+  if (ros.time)
+
+}
+*/
+
+
 void PidObject::doCalcs()
 {
   // Do fresh calcs if knowledge of the system has changed.
@@ -252,10 +299,10 @@ void PidObject::doCalcs()
         return;
       }
     }
-    else
+    else                                                                //first time program runs
     {
       ROS_INFO("prev_time is 0, doing nothing");
-      prev_time_ = ros::Time::now();
+      prev_time_ = ros::Time::now();                                    //when prev_time = 0, assign this ros::Time to it, then later go back to 'if' loop
       return;
     }
 
@@ -329,7 +376,7 @@ void PidObject::doCalcs()
       control_msg_.data = control_effort_;
       control_effort_pub_.publish(control_msg_);
       plant_pub_.publish(topic_from_plant_);                                    //power
-      setpoint_pub_.publish(setpoint_topic_);                                   //setpoint
+      //setpoint_pub_.publish(setpoint_topic_);                                   //setpoint
 
       // Publish topic with
       //std::vector<double> pid_debug_vect { plant_state_, control_effort_, proportional_, integral_, derivative_};
