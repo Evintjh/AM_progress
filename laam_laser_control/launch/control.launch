@@ -1,5 +1,4 @@
-
- <launch>
+<launch>
   <arg name="gui" default="true" />
   <arg name="sim" default="false" />
   
@@ -66,5 +65,6 @@
   <node name="acoustic_signatures" pkg="acoustic_feature_extraction" type="acoustic_feature_extraction.py"/>
 
   <node name="supervisor" pkg="laam_laser_control" type="nd_supervisor.py"/>
+
 
 </launch>

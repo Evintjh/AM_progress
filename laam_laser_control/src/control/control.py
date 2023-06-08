@@ -63,12 +63,18 @@ class PID():
         return self.output
 
     def update(self, value, time):
-        if self.time is None:
+
+
+        if self.time is None:                       #how come it's not this case?
+
+
             output = self.output
         else:
-            error = self.setpoint - value     #value is rms or spectral_centroid
+            error = self.setpoint - value
             delta = time - self.time
-            output = self.Kp * (error - self.error) + self.Ki * error * delta
+
+            output = self.Kp * (error - self.error) + self.Ki * error * delta 
+
             if output > 50:
                 output = 50
             if output < -50:

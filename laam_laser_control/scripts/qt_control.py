@@ -181,7 +181,7 @@ class QtControl(QtWidgets.QWidget):
 
 
     def cb_rms(self, msg_acoustic_feature):
-        self.rms_energy = msg_acoustic_feature.rms_energy
+        self.rms_energy = msg_acoustic_feature.spectral_centroids[0]
         
 
         #self.minor_axis = msg_geometry.minor_axis

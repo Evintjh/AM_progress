@@ -1,4 +1,3 @@
-
 #!/usr/bin/env python
 import os
 import rospy
@@ -213,7 +212,7 @@ class NdControl():
         value = self.range(value)
         # value = self.cooling(msg_geo.minor_axis, value) 
         self.msg_power.header.stamp = stamp
-        self.msg_power.value = value                                                                #this is the line that causes the change in power based off rms
+        self.msg_power.value = value
         self.msg_info.time = str(self.time_control)
         self.msg_info.track_number = self.track_number
         rospy.set_param('/control/power', value)
@@ -300,7 +299,7 @@ class NdControl():
                 #     self.auto_setpoint(minor_axis)
                 # if self.time_control > self.control_time_interval:
                 
-                #self.adaptive_setpoint(time, rms_energy)
+                # self.adaptive_setpoint(time, minor_axis)
                 # thread = Thread(target=self.adaptive_setpoint,
                 #                 args=(time, minor_axis)
                 #                 )
@@ -318,7 +317,7 @@ class NdControl():
         value = self.controlled_value
         return value
     
- '''   
+    
     def adaptive_setpoint(self, current_time, rms_energy):
         countLock = Lock() # use Lock() to avoid conflict when multiple thread accessing the same vriable
         countLock.acquire()
@@ -334,14 +333,13 @@ class NdControl():
             self.adaptive_time = current_time
             
         countLock.release()
- '''   
+    
     
 
 
     def auto_setpoint(self, rms_energy):
         self.track.append(rms_energy)
         self.setpoint = sum(self.track)/len(self.track)
-        self.msg_setpoint.setpoint = self.setpoint                                                         ####newly added, see if it works
 
     def step(self, time):
         #Step time
