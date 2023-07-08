@@ -53,24 +53,27 @@ include_directories( include
 )
 
 
-add_executable(main src/main.cpp src/CPP_pid.cpp )
+add_executable(main src/main.cpp src/CPP_pid.cpp)
+add_executable(autotuner src/autotune.cpp)
 #add_executable(CPP_plant_sim src/CPP_plant_sim.cpp)
-add_executable(simu_time src/sim_time.cpp)
+#add_executable(simu_time src/sim_time.cpp)
 
 add_dependencies(main ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(autotuner ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 #add_dependencies(CPP_plant_sim ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-add_dependencies(simu_time ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+#add_dependencies(simu_time ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 cmake_policy(SET CMP0079 NEW)
 target_link_libraries(main ${catkin_LIBRARIES})
-target_link_libraries(simu_time ${catkin_LIBRARIES})
+target_link_libraries(autotuner ${catkin_LIBRARIES})
+#target_link_libraries(simu_time ${catkin_LIBRARIES})
 #target_link_libraries(CPP_plant_sim ${catkin_LIBRARIES})
 
 #install(TARGETS main CPP_plant_sim 
  # RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 #)
 
-install(TARGETS main  sim_time
+install(TARGETS main autotuner
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 

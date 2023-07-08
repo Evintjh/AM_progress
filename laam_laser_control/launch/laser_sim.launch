@@ -17,6 +17,8 @@
   <arg name="sample_format" default="S16LE"/>
   <arg name="ns" default=""/>
   <arg name="audio_topic" default="/audio"/>
+  <arg name="plotjuggler_viz" default="true"/>
+  
  
 
   <!-- publish audio data as wav format (raw signal) to a topic -->
@@ -53,7 +55,7 @@
       <param name="Kp" value="5.0" />
       <param name="Ki" value="0.2" />
       <param name="Kd" value="0.0" />
-      <param name="upper_limit" value="1500" />
+      <param name="upper_limit" value="3000" />
       <param name="lower_limit" value="0" />
       <param name="windup_limit" value="10" />
       <param name="cutoff_frequency" value="20" />
@@ -69,10 +71,13 @@
    <!-- <node name="setpoint_node" pkg="pid" type="setpoint_node" output="screen" />-->
 
     <!-- rqt_plot is a resource hog, so if you're seeing high CPU usage, don't launch rqt_plot  -->
-    <node name="rqt_plot" pkg="rqt_plot" type="rqt_plot"
-    args="/control_effort/data /acoustic_feature/rms_energy /control/setpoint/setpoint" />
+  <!-- <node name="rqt_plot" pkg="rqt_plot" type="rqt_plot"
+    args="/control/power/value /acoustic_feature/rms_energy /control/setpoint/setpoint" /> -->
 
     <node name="rqt_reconfigure" pkg="rqt_reconfigure" type="rqt_reconfigure" />
 
-    <node name="rqt_robot_monitor" pkg="rqt_robot_monitor" type="rqt_robot_monitor" />
+    <node name="rqt_robot_monitor" pkg="rqt_robot_monitor" type="rqt_robot_monitor" /> 
+
+    <node name="plot_acoustic_signature" pkg="plotjuggler" type="plotjuggler" if="$(arg plotjuggler_viz)"/>
+    
 </launch>

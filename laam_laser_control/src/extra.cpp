@@ -2,9 +2,9 @@
 #include <laam_laser_control/pid.h>
 
 using namespace pid_ns;
-
+//setpoint_list(1,0)
 //PidObject::PidObject() : error_(3, 0), filtered_error_(3, 0), error_deriv_(3, 0), filtered_error_deriv_(3, 0)     //1D rray of 3 elements
-PidObject::PidObject() : error_(3, 0), filtered_error_(3, 0)  
+PidObject::PidObject() : error_(3, 0), filtered_error_(3, 0)
 {
   ros::NodeHandle node;                                                                                       //cpp need nodehandle to publish/subscribe to info
   ros::NodeHandle node_priv("~");                                                                             //Cpp need nodehandle to to tap onto params from launch file                            
@@ -40,6 +40,9 @@ PidObject::PidObject() : error_(3, 0), filtered_error_(3, 0)
   node_priv.param<bool>("rms_energy_error", rms_energy_error_, true);
   //node_priv.param<double>("angle_wrap", angle_wrap_, 2.0 * 3.14159);                                //subscribe to AcousticFeatureExtraction
   node_priv.param<std::string>("rms_energy", rms_energy_topic, "acoustic_feature");                                              //what value to put for last section?
+
+  //adaptive_time = ros::Time::now();
+
 
 
   // Update params if specified as command-line options, & print settings
@@ -86,7 +89,7 @@ PidObject::PidObject() : error_(3, 0), filtered_error_(3, 0)
 
   // Respond to inputs until shut down
   while (ros::ok())
-  {
+  { adaptive_time = ros::Time::now();
     doCalcs();                                                                                //impt fn
     
     ros::spinOnce();
@@ -97,30 +100,22 @@ PidObject::PidObject() : error_(3, 0), filtered_error_(3, 0)
   }
 };
 
+/*
 void PidObject::setpointRelease(double plant_state_)          //does python implementation have this? 
 {
   //setpoint_ = MsgSetpoint.setpoint;                                              //error derivation
     rms_energy_list.push_back(plant_state_);
-
-    if (rms_energy_list.size()<= 1) setpoint_.setpoint = rms_energy_list.at(0);
-
-    else{
-      setpoint_.setpoint = (rms_energy_list.at(rms_energy_list.size()-1) + rms_energy_list.at(rms_energy_list.size() - 2))/2;
-    }
-    //setpoint_.setpoint = accumulate(rms_energy_list.begin(), rms_energy_list.end(), 0.0) / rms_energy_list.size();
-
-//if u have time, change this to if rms_energy)list.size()<=1 --> do setpoint_.setpoint = rms_energy_list.at(0)
-                                //  else --> do rms_energy_list.at(-1) + ms_energy_list.at(-2) /2
-  
+    setpoint_.setpoint = accumulate(rms_energy_list.begin(), rms_energy_list.end(), 0.0) / rms_energy_list.size();
+    //setpoint_.setpoint = 0.00008;
 
     //control.pid.set_setpoint(setpoint);
     //MsgSetpoint = setpoint_;
     //pub_setpoint.publish(msg_setpoint);
     setpoint_pub_.publish(setpoint_);
- 
   
     new_state_or_setpt_ = true;
 }
+*/
 
 /*
 void PidObject::pidRmsCallback(const std_msg::Float64& MsgAcousticFeature)
@@ -138,6 +133,7 @@ void PidObject::plantStateCallback(const acoustic_monitoring_msgs::MsgAcousticFe
   //plant_state_ = MsgAcousticFeature.spectral_centroids[0];
   //rms_energy_error_ = false;
   new_state_or_setpt_ = true;
+  current_time = MsgAcousticFeature.header.stamp;
 }
 
 
@@ -222,8 +218,7 @@ void PidObject::reconfigureCallback(pid::PidConfig& config, uint32_t level)
 
 /*
     def adaptive_setpoint(self, current_time, rms_energy):
-        countLock = Lock() # use Lock() to avoid conflict when multiple thread accessing the same vriable
-        countLock.acquire()
+        
         
         if current_time - self.adaptive_time < ADAPTIVE_SETPOINT_INTERVAL: 
             self.rms_energy_list.append(rms_energy)
@@ -235,7 +230,7 @@ void PidObject::reconfigureCallback(pid::PidConfig& config, uint32_t level)
             self.rms_energy_list = []
             self.adaptive_time = current_time
             
-        countLock.release()
+        
     
     
 
@@ -243,20 +238,58 @@ void PidObject::reconfigureCallback(pid::PidConfig& config, uint32_t level)
     def auto_setpoint(self, rms_energy):
         self.track.append(rms_energy)
         self.setpoint = sum(self.track)/len(self.track)
-
 */
 
 
+void PidObject::setpointRelease(double plant_state_)          //does python implementation have this? 
+{
+  //setpoint_ = MsgSetpoint.setpoint;                                              //error derivation
+    rms_energy_list.push_back(plant_state_);
+    setpoint_.setpoint = accumulate(rms_energy_list.begin(), rms_energy_list.end(), 0.0) / rms_energy_list.size();
+    //setpoint_.setpoint = 0.00008;
 
+    //control.pid.set_setpoint(setpoint);
+    //MsgSetpoint = setpoint_;
+    //pub_setpoint.publish(msg_setpoint);
+    setpoint_pub_.publish(setpoint_);
 
-
-/*
-void adaptive_setpt(const std_msgs::Float64& MsgAcousticFeature){
-
-  if (ros.time)
-
+  
+    new_state_or_setpt_ = true;
 }
-*/
+
+
+
+
+void PidObject::adaptive_setpt(const ros::Time& current_time, double plant_state){
+
+    //using ros time - rms time
+  if ((current_time - adaptive_time).toSec() < ADAPTIVE_SETPOINT_INTERVAL){                                     //why is the interval always 30s?
+    rms_energy_list.push_back(plant_state);         //this instance happens too often
+    setpoint_.setpoint = setpoint_list.at(0);
+    setpoint_pub_.publish(setpoint_);
+  }
+  else{
+    setpoint_.setpoint = accumulate(rms_energy_list.begin(), rms_energy_list.end(), 0.0) / rms_energy_list.size();
+    setpoint_list.at(0) = accumulate(rms_energy_list.begin(), rms_energy_list.end(), 0.0) / rms_energy_list.size();
+    //setpoint_list.at(0) = setpoint_.setpoint;
+  
+    //setpoint_.setpoint = 0.00008;
+//if u have time, change this to if rms_energy)list.size()<=1 --> do setpoint_.setpoint = rms_energy_list.at(0)
+                                //  else --> do rms_energy_list.at(-1) + ms_energy_list.at(-2) /2
+
+    //control.pid.set_setpoint(setpoint);
+    //MsgSetpoint = setpoint_;
+    //pub_setpoint.publish(msg_setpoint);
+    setpoint_pub_.publish(setpoint_);
+    rms_energy_list={};                                           //reset the average 
+    adaptive_time = current_time;
+    new_state_or_setpt_ = true;
+  }
+  
+}
+
+
+
 
 
 void PidObject::doCalcs()
@@ -271,17 +304,18 @@ void PidObject::doCalcs()
 
     error_.at(2) = error_.at(1);
     error_.at(1) = error_.at(0);
-    error_.at(0) = setpoint_.setpoint - plant_state_;  // Current error goes to slot 0
+    error_.at(0) = setpoint_.setpoint - plant_state_;  // Current error goes to slot 0                //if volume increases, error becomes more negative, hence bringing power down
 
     // If the angle_error param is true, then address discontinuity in error                          //ok makes sense but previously it's set as false
     // calc.
     // For example, this maintains an angular error between -180:180.
 
+    /*
     
     if (rms_energy_error_)
     { 
-                                                         
-      //while (error_.at(0) < -((plant_state_)*10**5) / 2.0)
+                                   
+      //while (error_.at(0) < -1.0 * angle_wrap_ / 2.0)
       while (error_.at(0) < -((plant_state_)) / 2.0)     
       {
         error_.at(0) += ((plant_state_));                                  //means plant state > setpoint                                         //error varies with AFE::rms_energy now
@@ -309,7 +343,7 @@ void PidObject::doCalcs()
         error_integral_ = 0.;
       }
     }
-    
+    */
 
     // calculate delta_t
     if (!prev_time_.isZero())  // Not first time through the program since prev_time is not 0
@@ -399,7 +433,8 @@ void PidObject::doCalcs()
                          (ros::Time::now() - last_setpoint_msg_time_).toSec() <= setpoint_timeout_))
     //if (pid_enabled_)
     { 
-      setpointRelease(plant_state_);
+      setpointRelease(plant_state_);                                            //should not be here, should be called before calling docalac()
+      //adaptive_setpt(current_time, plant_state_);                             //msg_acoustic_feature.header.stamp
       //ros::Rate rate(0.5);
       //control_msg_.data = control_effort_;
       //power_value_.header.stamp = ros::Time::now();
@@ -420,6 +455,7 @@ void PidObject::doCalcs()
       pidDebugMsg.data = pid_debug_vect;
       pid_debug_pub_.publish(pidDebugMsg);
     }
+    /*
     else if (setpoint_timeout_ > 0 && (ros::Time::now() - last_setpoint_msg_time_).toSec() > setpoint_timeout_)
     {
       ROS_WARN_ONCE("Setpoint message timed out, will stop publising control_effort_messages");
@@ -428,6 +464,8 @@ void PidObject::doCalcs()
     else
       error_integral_ = 0.0;
   }
+  */
 
   new_state_or_setpt_ = false;
+}
 }
