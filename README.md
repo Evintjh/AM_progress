@@ -10,7 +10,7 @@ For PID (C++) on PlotJuggler: Launch laser_sim.launch file
 - Run ROS command: roslaunch laam_laser_control laser_sim.launch
 - PI feedback control based on r.m.s energy of surrounding sound captured
 - Integral Control in PID (C++):
-  - Bi-linear (Tustin, Trapezoidal) technique to transform integral control to z-domain / discrete domain.
+  - Bi-linear technique to transform integral control to z-domain / discrete domain.
   - Transforming to discrete domain allows better performance compared to Euler (Forward) and Backward rule, which is commonly used in time-domain integral control.
   - https://www.semanticscholar.org/paper/Bilinear-Discrete-PID%C3%97(n-2)-stage-PD-cascade-for-Smerpitak-Ukakimaparn/4c3b9d24d9c8a3af1189585f226fad599fe828c8
 
