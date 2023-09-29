@@ -280,7 +280,7 @@ void PidObject::doCalcs()
 
     // Bi-linear (Tustin, Trapezoidal) technique to transform integral control to z-domain / discrete domain. 
     // Transforming to discrete domain allows better performance compared to Euler (Forward) and Backward rule, which is commonly used in time-domain integral control.
-    integral_ = Ki_ * error_integral_ * 0.5 * delta_t_.toSec();         
+    integral_ = Ki_ * error_integral_ * 0.5;         
     //integral_ = Ki_ * error_integral_ * delta_t_.toSec();
     control_effort_ += (proportional_ + integral_);
 
