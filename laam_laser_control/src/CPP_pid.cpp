@@ -279,8 +279,6 @@ void PidObject::doCalcs()
     // Calculate the control effort
 
     proportional_ = Kp_ * error_.at(0);
-
-
     integral_ = Ki_ * error_integral_;         
     //integral_ = Ki_ * error_integral_ * delta_t_.toSec();
     control_effort_ += (proportional_ + integral_);
