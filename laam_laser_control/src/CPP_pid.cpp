@@ -192,6 +192,7 @@ void PidObject::doCalcs()
       ROS_WARN("All three gains (Kp, Ki, Kd) should have the same sign for "
                "stability.");
 
+    //  how values are "appended" instead of using vector.push_back -> will generate error
     error_.at(2) = error_.at(1);
     error_.at(1) = error_.at(0);
     error_.at(0) = setpoint_.setpoint - plant_state_;  // Current error goes to slot 0
