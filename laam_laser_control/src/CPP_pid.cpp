@@ -219,7 +219,9 @@ void PidObject::doCalcs()
     }
 
     // Integral of error
-    error_integral_ += error_.at(0) * delta_t_.toSec();                                               
+    // Bi-linear (Tustin, Trapezoidal) technique to transform integral control to z-domain / discrete domain. 
+    // Transforming to discrete domain allows better performance compared to Euler (Forward) and Backward rule, which is commonly used in time-domain integral control.
+    error_integral_ += 0.5 * (error_.at(0) + error_.at(1)) * delta_t_.toSec();                                               
 
     // Apply windup limit to limit the size of the integral term. Windup limit should be adjusted accordingly to ensure stability of system.
     if (error_integral_ > fabsf(windup_limit_))                                                       
@@ -278,9 +280,8 @@ void PidObject::doCalcs()
 
     proportional_ = Kp_ * error_.at(0);
 
-    // Bi-linear (Tustin, Trapezoidal) technique to transform integral control to z-domain / discrete domain. 
-    // Transforming to discrete domain allows better performance compared to Euler (Forward) and Backward rule, which is commonly used in time-domain integral control.
-    integral_ = Ki_ * error_integral_ * 0.5;         
+
+    integral_ = Ki_ * error_integral_;         
     //integral_ = Ki_ * error_integral_ * delta_t_.toSec();
     control_effort_ += (proportional_ + integral_);
 
